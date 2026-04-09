@@ -11,6 +11,13 @@ from app.models.service import Service
 from app.models.stylist_profile import StylistProfile
 from app.schemas.appointment import AppointmentCreate, AppointmentUpdate
 
+VALID_TRANSITIONS: dict[AppointmentStatus, list[AppointmentStatus]] = {
+    AppointmentStatus.scheduled:   [AppointmentStatus.in_progress, AppointmentStatus.cancelled],
+    AppointmentStatus.in_progress: [AppointmentStatus.completed, AppointmentStatus.cancelled],
+    AppointmentStatus.completed:   [],
+    AppointmentStatus.cancelled:   [],
+}
+
 
 def _check_stylist_availability(
     db: Session,
@@ -109,6 +116,15 @@ def update_appointment(
     db: Session, appointment: Appointment, data: AppointmentUpdate
 ) -> Appointment:
     updates = data.model_dump(exclude_unset=True)
+
+    if "status" in updates:
+        new_status = updates["status"]
+        allowed = VALID_TRANSITIONS[appointment.status]
+        if new_status not in allowed:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"No se puede cambiar el estado de '{appointment.status.value}' a '{new_status.value}'",
+            )
 
     if "start_time" in updates:
         service = db.get(Service, appointment.service_id)
