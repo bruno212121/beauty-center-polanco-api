@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import require_admin_or_receptionist
 from app.crud import appointment as crud
 from app.database import get_db
-from app.models.appointment import AppointmentStatus
+from app.models.appointment import AppointmentStatus  # usado en query param
 from app.schemas.appointment import (
     AppointmentCreate,
     AppointmentDetailOut,
@@ -70,8 +70,4 @@ def update_appointment(
     appointment = crud.get_appointment(db, appointment_id)
     if not appointment:
         raise HTTPException(status_code=404, detail="Cita no encontrada")
-    if appointment.status == AppointmentStatus.cancelled:
-        raise HTTPException(
-            status_code=400, detail="No se puede modificar una cita cancelada"
-        )
     return crud.update_appointment(db, appointment, data)
