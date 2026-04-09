@@ -1,13 +1,12 @@
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, require_admin
+from app.core.dependencies import require_admin
 from app.crud import commission as crud
 from app.database import get_db
 from app.models.commission import CommissionSourceType
-from app.models.user import User, UserRole
 from app.schemas.commission import CommissionOut, CommissionSummary
 
 router = APIRouter(prefix="/commissions", tags=["Comisiones"])
@@ -16,6 +15,7 @@ router = APIRouter(prefix="/commissions", tags=["Comisiones"])
 @router.get(
     "/stylist/{stylist_id}",
     response_model=list[CommissionOut],
+    dependencies=[Depends(require_admin)],
 )
 def list_stylist_commissions(
     stylist_id: int,
@@ -23,13 +23,7 @@ def list_stylist_commissions(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
-    # Un estilista solo puede ver sus propias comisiones;
-    # admin puede ver cualquiera
-    if current_user.role != UserRole.admin:
-        if not current_user.stylist_profile or current_user.stylist_profile.id != stylist_id:
-            raise HTTPException(status_code=403, detail="Acceso denegado")
 
     return crud.get_commissions_by_stylist(
         db, stylist_id=stylist_id, source_type=source_type, skip=skip, limit=limit
