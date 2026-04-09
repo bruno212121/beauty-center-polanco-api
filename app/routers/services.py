@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, require_admin
+from app.core.dependencies import require_admin, require_admin_or_receptionist
 from app.crud import service as crud
 from app.database import get_db
 from app.schemas.service import ServiceCreate, ServiceOut, ServiceUpdate
@@ -9,7 +9,7 @@ from app.schemas.service import ServiceCreate, ServiceOut, ServiceUpdate
 router = APIRouter(prefix="/services", tags=["Servicios"])
 
 
-@router.get("/", response_model=list[ServiceOut], dependencies=[Depends(get_current_user)])
+@router.get("/", response_model=list[ServiceOut], dependencies=[Depends(require_admin_or_receptionist)])
 def list_services(
     active_only: bool = False,
     category: str | None = None,
@@ -32,7 +32,7 @@ def create_service(data: ServiceCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{service_id}", response_model=ServiceOut,
-            dependencies=[Depends(get_current_user)])
+            dependencies=[Depends(require_admin_or_receptionist)])
 def get_service(service_id: int, db: Session = Depends(get_db)):
     service = crud.get_service(db, service_id)
     if not service:

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, require_admin_or_receptionist
+from app.core.dependencies import require_admin_or_receptionist
 from app.crud import product_sale as crud
 from app.database import get_db
 from app.schemas.product_sale import ProductSaleCreate, ProductSaleOut
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/sales", tags=["Ventas de productos"])
 
 
 @router.get("/", response_model=list[ProductSaleOut],
-            dependencies=[Depends(get_current_user)])
+            dependencies=[Depends(require_admin_or_receptionist)])
 def list_sales(
     client_id: int | None = None,
     stylist_id: int | None = None,
@@ -34,7 +34,7 @@ def create_sale(data: ProductSaleCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{sale_id}", response_model=ProductSaleOut,
-            dependencies=[Depends(get_current_user)])
+            dependencies=[Depends(require_admin_or_receptionist)])
 def get_sale(sale_id: int, db: Session = Depends(get_db)):
     sale = crud.get_product_sale(db, sale_id)
     if not sale:

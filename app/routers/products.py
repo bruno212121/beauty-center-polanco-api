@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, require_admin
+from app.core.dependencies import require_admin, require_admin_or_receptionist
 from app.crud import product as crud
 from app.database import get_db
 from app.schemas.product import ProductCreate, ProductOut, ProductUpdate
@@ -9,7 +9,7 @@ from app.schemas.product import ProductCreate, ProductOut, ProductUpdate
 router = APIRouter(prefix="/products", tags=["Productos"])
 
 
-@router.get("/", response_model=list[ProductOut], dependencies=[Depends(get_current_user)])
+@router.get("/", response_model=list[ProductOut], dependencies=[Depends(require_admin_or_receptionist)])
 def list_products(
     active_only: bool = False,
     category: str | None = None,
@@ -39,7 +39,7 @@ def create_product(data: ProductCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{product_id}", response_model=ProductOut,
-            dependencies=[Depends(get_current_user)])
+            dependencies=[Depends(require_admin_or_receptionist)])
 def get_product(product_id: int, db: Session = Depends(get_db)):
     product = crud.get_product(db, product_id)
     if not product:

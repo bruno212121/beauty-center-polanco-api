@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, require_admin_or_receptionist
+from app.core.dependencies import require_admin_or_receptionist
 from app.crud import appointment as crud
 from app.database import get_db
 from app.models.appointment import AppointmentStatus
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/appointments", tags=["Citas"])
 @router.get(
     "/",
     response_model=list[AppointmentDetailOut],
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(require_admin_or_receptionist)],
 )
 def list_appointments(
     client_id: int | None = None,
@@ -50,7 +50,7 @@ def create_appointment(data: AppointmentCreate, db: Session = Depends(get_db)):
 @router.get(
     "/{appointment_id}",
     response_model=AppointmentDetailOut,
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(require_admin_or_receptionist)],
 )
 def get_appointment(appointment_id: int, db: Session = Depends(get_db)):
     appointment = crud.get_appointment(db, appointment_id)

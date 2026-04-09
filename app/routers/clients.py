@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, require_admin_or_receptionist
+from app.core.dependencies import require_admin_or_receptionist
 from app.crud import client as crud
 from app.database import get_db
-from app.models.user import User
 from app.schemas.client import ClientCreate, ClientOut, ClientUpdate
 
 router = APIRouter(prefix="/clients", tags=["Clientes"])
@@ -13,7 +12,7 @@ router = APIRouter(prefix="/clients", tags=["Clientes"])
 @router.get(
     "/",
     response_model=list[ClientOut],
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(require_admin_or_receptionist)],
 )
 def list_clients(
     search: str | None = None,
@@ -37,7 +36,7 @@ def create_client(data: ClientCreate, db: Session = Depends(get_db)):
 @router.get(
     "/{client_id}",
     response_model=ClientOut,
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(require_admin_or_receptionist)],
 )
 def get_client(client_id: int, db: Session = Depends(get_db)):
     client = crud.get_client(db, client_id)
