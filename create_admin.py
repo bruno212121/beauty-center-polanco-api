@@ -21,9 +21,9 @@ def main():
         user = create_user(
             db,
             UserCreate(
-                full_name=full_name,
-                email=email,
-                password=password,
+                full_name="Nombre del administrador",
+                email="email@del.administrador",
+                password="contraseña_del_administrador",
                 role=UserRole.admin,
             ),
         )
