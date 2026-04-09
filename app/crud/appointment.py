@@ -10,6 +10,7 @@ from app.models.commission import CommissionSourceType
 from app.models.service import Service
 from app.models.stylist_profile import StylistProfile
 from app.schemas.appointment import AppointmentCreate, AppointmentUpdate
+from app.config import settings
 
 VALID_TRANSITIONS: dict[AppointmentStatus, list[AppointmentStatus]] = {
     AppointmentStatus.scheduled:   [AppointmentStatus.in_progress, AppointmentStatus.cancelled],
@@ -152,15 +153,14 @@ def update_appointment(
         and appointment.status == AppointmentStatus.completed
         and appointment.total_amount
     ):
-        stylist = db.get(StylistProfile, appointment.stylist_id)
-        if stylist and stylist.commission_service_percent > 0:
-            create_commission(
-                db=db,
-                stylist_id=appointment.stylist_id,
-                source_type=CommissionSourceType.service,
-                source_id=appointment.id,
-                percentage=stylist.commission_service_percent,
-                base_amount=appointment.total_amount,
-            )
+        create_commission(
+            db=db,
+            stylist_id=appointment.stylist_id,
+            source_type=CommissionSourceType.service,
+            source_id=appointment.id,
+            percentage=settings.COMMISSION_SERVICE_PERCENT,
+            base_amount=appointment.total_amount,
+        )
+
 
     return appointment

@@ -3,11 +3,11 @@ from decimal import Decimal
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 
+from app.config import settings
 from app.crud.commission import create_commission
 from app.models.commission import CommissionSourceType
 from app.models.product import Product
 from app.models.product_sale import ProductSale, ProductSaleItem
-from app.models.stylist_profile import StylistProfile
 from app.schemas.product_sale import ProductSaleCreate
 
 
@@ -87,15 +87,13 @@ def create_product_sale(db: Session, data: ProductSaleCreate) -> ProductSale:
 
     # Generar comisión por venta si hay estilista asignado
     if data.stylist_id:
-        stylist = db.get(StylistProfile, data.stylist_id)
-        if stylist and stylist.commission_product_percent > 0:
-            create_commission(
-                db=db,
-                stylist_id=data.stylist_id,
-                source_type=CommissionSourceType.product,
-                source_id=sale.id,
-                percentage=stylist.commission_product_percent,
-                base_amount=total,
-            )
+        create_commission(
+            db=db,
+            stylist_id=data.stylist_id,
+            source_type=CommissionSourceType.product,
+            source_id=sale.id,
+            percentage=settings.COMMISSION_PRODUCT_PERCENT,
+            base_amount=total,
+        )
 
     return get_product_sale(db, sale.id)
