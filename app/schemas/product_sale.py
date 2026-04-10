@@ -23,7 +23,7 @@ class ProductSaleItemOut(BaseModel):
 
 
 class ProductSaleCreate(BaseModel):
-    client_id: int | None = None
+    client_id: int
     stylist_id: int | None = None
     items: list[ProductSaleItemCreate]
 
@@ -32,7 +32,7 @@ class ProductSaleOut(BaseModel):
     model_config = {"from_attributes": True}
 
     id: int
-    client_id: int | None
+    client_id: int
     stylist_id: int | None
     total_amount: Decimal
     created_at: datetime

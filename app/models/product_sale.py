@@ -11,7 +11,7 @@ class ProductSale(Base):
     __tablename__ = "product_sales"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    client_id: Mapped[int | None] = mapped_column(ForeignKey("clients.id"), index=True)
+    client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"), index=True)
     stylist_id: Mapped[int | None] = mapped_column(
         ForeignKey("stylist_profiles.id"), index=True
     )
