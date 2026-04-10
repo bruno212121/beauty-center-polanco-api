@@ -5,6 +5,7 @@ from app.core.dependencies import require_admin_or_receptionist
 from app.crud import client as crud
 from app.database import get_db
 from app.schemas.client import ClientCreate, ClientOut, ClientUpdate
+from app.schemas.client_history import ClientHistoryOut
 
 router = APIRouter(prefix="/clients", tags=["Clientes"])
 
@@ -55,3 +56,14 @@ def update_client(client_id: int, data: ClientUpdate, db: Session = Depends(get_
     if not client:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     return crud.update_client(db, client, data)
+
+@router.get(
+    "/{client_id}/history",
+    response_model=ClientHistoryOut,
+    dependencies=[Depends(require_admin_or_receptionist)],
+)
+def get_client_history(client_id: int, db: Session = Depends(get_db)):
+    client = crud.get_client_history(db, client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    return client
