@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
@@ -31,10 +32,16 @@ def get_commissions_by_stylist(
     db: Session,
     stylist_id: int,
     source_type: CommissionSourceType | None = None,
+    date_from: datetime | None = None,
+    date_to: datetime | None = None,
     skip: int = 0,
     limit: int = 100,
 ) -> list[Commission]:
     q = db.query(Commission).filter(Commission.stylist_id == stylist_id)
     if source_type:
         q = q.filter(Commission.source_type == source_type)
+    if date_from:
+        q = q.filter(Commission.created_at >= date_from)
+    if date_to:
+        q = q.filter(Commission.created_at <= date_to)
     return q.order_by(Commission.created_at.desc()).offset(skip).limit(limit).all()
