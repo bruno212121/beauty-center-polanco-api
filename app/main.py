@@ -44,3 +44,7 @@ app.include_router(commissions.router)
 @app.get("/", tags=["Root"])
 def root():
     return {"message": "Beauty Center Polanco API", "docs": "/docs"}
+
+@app.get("/health", tags=["Health"])
+def health():
+    return {"status": "ok"}
