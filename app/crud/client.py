@@ -1,7 +1,9 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.client import Client
 from app.schemas.client import ClientCreate, ClientUpdate
+from app.models.appointment import Appointment
+from app.models.product_sale import ProductSale, ProductSaleItem
 
 
 def get_client(db: Session, client_id: int) -> Client | None:
@@ -31,3 +33,17 @@ def update_client(db: Session, client: Client, data: ClientUpdate) -> Client:
     db.commit()
     db.refresh(client)
     return client
+
+def get_client_history(db: Session, client_id: int) -> Client | None:
+    return (
+        db.query(Client)
+        .options(
+            joinedload(Client.appointments)
+            .joinedload(Appointment.service),
+            joinedload(Client.product_sales)
+            .joinedload(ProductSale.items)
+            .joinedload(ProductSaleItem.product),
+        )
+        .filter(Client.id == client_id)
+        .first()
+    )
